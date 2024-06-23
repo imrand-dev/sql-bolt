@@ -1,0 +1,17 @@
+<a href="https://codewithmosh.com/p/complete-sql-mastery"><img src="https://i.ibb.co/R7zJPnZ/image.png" alt="" title="ultimate-sql"></a>
+
+- [x] Getting Started (25m)
+- [x] Retrieving Data from a Single Table (60m)
+- [x] Retrieving Data from Multiple Tables (1h)
+- [x] Inserting, Updating, and Deleting Data (42m)
+- [x] Summarizing Data (31m)
+- [x] Writing Complex Query (39m)
+- [x] Essential MySQL Functions (32m)
+- [x] Views (19m)
+- [ ] Stored Procedures (49m)
+- [ ] Triggers and Events (21m)
+- [ ] Transactions and Concurrency (44m)
+- [ ] Data Types (24m)
+- [ ] Designing Databases (2h)
+- [ ] Indexing for High Performance (53m)
+- [ ] Securing Databases (15m)
