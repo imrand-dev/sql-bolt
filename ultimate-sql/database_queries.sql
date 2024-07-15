@@ -283,7 +283,7 @@ from payments join payment_methods
 on payment_method = payment_method_id
 group by name with rollup;
 
--- Subqueries
+-- ================== Subqueries ================================
 -- find all products that are more expensive than lettuce (id=3)
 use sql_store;
 select * from products where unit_price > (select unit_price from products where product_id=3);
@@ -372,24 +372,259 @@ select
 	end as category
 from orders;
 
--- create a view
+-- ========================= view ===========================
 use sql_invoicing;
 
 -- it returns nothing
-create view sales_by_client as
+create or replace view sales_by_client as
 select c.client_id, c.name, sum(invoice_total) as total_sales from clients as c
 join invoices as i using(client_id)
 group by c.client_id, c.name;
 
--- execute view as normal table
+-- execute view as normal statement
 select * from sales_by_client;
 
 -- drop view
 drop view sales_by_client;
 
+-- exercise
+-- create a view to see the balance for each client
+	-- clients_balance
+		-- client_id
+		-- name
+		-- balance
+create view clients_balance as 
+	select c.client_id, c.name, sum(invoice_total-payment_total) as balance
+	from clients as c  
+	join invoices as i using (client_id)
+	group by client_id, name;
+
+select * from clients_balance;
+
 -- we can update/delete row from view as well only
 	-- if the view doesn't contains
-		-- distinct
-		-- aggregrate functions
-		-- group by / having
-		-- union
+	-- distinct
+	-- aggregrate functions
+	-- group by / having
+	-- union
+
+-- with check option
+
+-- ============= store procedure/custom function ========================
+-- it is used to store and organize data
+
+use sql_store;
+
+delimiter $$ -- can be optional
+create procedure get_customers()
+begin
+	select * from customers;
+end$$
+
+delimiter ; -- return back to original stage
+
+call get_customers();
+
+-- exercise
+-- create a procedure called get_invoices_with_balance 
+-- to return all the invoices with balance > 0
+use sql_invoicing;
+create procedure get_invoices_with_balance()
+begin
+	select * 
+	from invoices 
+	where invoice_total - payment_total > 0;
+end;
+
+call get_invoices_with_balance();
+
+-- drop procedure
+drop procedure if exists get_invoices_with_balance;
+
+-- store procedure with parameters
+use sql_invoicing;
+drop procedure if exists get_clients_by_state;
+
+create procedure get_clients_by_state(state varchar(5))
+begin
+  select * from clients as c where c.state=state;
+end;
+
+call get_clients_by_state("CA");
+
+-- default value doesn't support by mysql 
+-- check them manually
+use sql_invoicing;
+drop procedure if exists get_clients_by_state;
+
+create procedure get_clients_by_state(state varchar(5))
+begin
+  if state is null then
+  	select * from clients;
+	else
+		select * from clients as c where c.state=state;
+  end if;
+end;
+
+-- shorter way
+create procedure get_clients_by_state(state varchar(5))
+begin
+  select * from clients as c where c.state=ifnull(state, c.state);
+end;
+
+call get_clients_by_state(null);
+
+-- exercise
+-- write a store procedure to return invoices for a given client get_clients_by_state
+create procedure get_invoices_by_client(client_id INT)
+
+begin
+	select * from invoices as i where i.client_id=client_id;
+end;
+
+call get_invoices_by_client(2);
+
+-- parameter validation
+create procedure make_payment(invoice_id int, payment_amount decimal(9, 2), payment_date date);
+
+begin
+	if payment_amount <= 0 then
+		signal sqlstate "22003" set message_text="Invalid payment amount";
+	endif;
+
+	update invoices as i 
+		set i.payment_total=payment_amount, i.payment_date=payment_date
+		where i.invoice_id=invoice_id;
+end;
+
+call make_payment(2, 100, "2019-01-01");
+
+-- output parameters/return values
+-- https://youtu.be/v12dw3kUJlk
+create procedure get_unpaid_invoices_for_client(IN client_id INT, out invoice_count int, out invoices_total decimal(9, 2))
+begin
+	select count(*), sum(invoice_total)
+	into invoice_count, invoices_total
+	from invoices as i   
+	where i.client_id=client_id
+		and payment_total=0;
+end;
+
+call get_unpaid_invoices_for_client(3, @invoice_count, @invoices_total);
+select @invoice_count, @invoices_total;
+
+-- user/session variables, active until mysql disconnected
+-- prefix with @
+set @variable_name = value;
+
+-- local varriable for store procedure
+create procedure get_risk_factor()
+begin
+	declare risk_factor decimal(9, 2) DEFAULT 0;
+	declare invoices_total decimal(9, 2);
+	declare invoice_count int;
+
+	select count(*), sum(invoice_total)
+	into invoice_count, invoices_total
+	from invoices;
+
+	set risk_factor = invoices_total/invoice_count*5;
+
+	select risk_factor;
+end;
+
+call get_risk_factor();
+
+-- function (return only single value)
+-- store procedure return multiple values
+create function get_risk_factor_for_client(client_id int)
+returns integer
+-- attributes
+	-- deterministic [for x return always y]
+	-- reads sql data [select statement to read data]
+	-- modifies sql data [update/delete statements]
+reads sql data
+begin 
+	declare risk_factor decimal(9, 2) DEFAULT 0;
+	declare invoices_total decimal(9, 2);
+	declare invoice_count int;
+
+	select count(*), sum(invoice_total)
+	into invoice_count, invoices_total
+	from invoices as i
+	where i.client_id=client_id;
+
+	set risk_factor = invoices_total/invoice_count*5;
+	return ifnull(risk_factor, 0);
+end;
+
+select 
+	client_id, name, get_risk_factor_for_client(client_id) as risk_factor
+from clients;
+
+-- drop function
+drop function if exists get_risk_factor_for_client;
+
+-- ===================== Triggers & events =====================
+-- a trigger of SQL code that automatically executed before or after 
+-- an insert, update, and delete statement.
+use sql_invoicing;
+
+create trigger payments_after_insert
+	after insert on payments
+	for each row
+begin
+	update invoices set payment_total = payment_total + NEW.amount
+	where invoice_id=new.invoice_id;
+end;
+
+insert into payments values (DEFAULT, 5, 3, "2019-01-01", 10, 1);
+
+select * from invoices;
+
+-- create a trigger that gets fired when we delete a payment
+create trigger payments_after_delete 
+	after delete on payments
+	for each row
+begin
+	update invoices set payment_total = payment_total - old.amount
+	where invoice_id=old.invoice_id;
+end;
+
+delete from payments where payments_id=10;
+
+show triggers; -- return all triggers in a current database
+
+-- drop trigger
+drop trigger if exists payments_after_delete;
+
+-- payment_audit table
+create table payments_audit (
+	client_id int primary key auto_increment,
+	date date not null,
+	amount decimal(9, 2) not null,
+	action_type varchar(50) not null,
+	action_date datetime not null
+);
+
+-- events: a block of SQL code or task that gets executed according to schedule.
+show variables; -- all system variables
+
+-- on event_scheduler first
+show variables like "event%";
+set global event_scheduler=off 
+
+create event yearly_delete_state_audit_rows
+	on schedule 
+	-- at "2020-05-20" (only once)
+	every 1 year start "2020-05-20" ends "2029-05-20"
+do begin
+	delete from payments_audit
+		where action_date < now() - interval 1 year;
+end;
+
+-- view events in current database
+show events;
+
+-- drop events
+drop events if exists yearly_delete_state_audit_rows;
