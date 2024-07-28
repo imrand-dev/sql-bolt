@@ -1,12 +1,12 @@
-<a href="https://www.durgasoftonline.com/courses/MongoDB-New-Batch-Videos-18th-DEC-8-AM-by-Durga-Sir-5fe2bdfc0cf2817f67426bcc"><img src="https://i.ibb.co/kSkJQKk/image.png" alt=""></a>
+<a href="https://www.durgasoftonline.com/courses/MongoDB-New-Batch-Videos-18th-DEC-8-AM-by-Durga-Sir-5fe2bdfc0cf2817f67426bcc"><img src="https://i.ibb.co/kSkJQKk/image.png" alt="mongodb-batch"></a>
 
-> Compiler: https://www.mycompiler.io/new/mongodb
+> Online Compiler: https://www.mycompiler.io/new/mongodb
 
 MongoDB comes from Humongous, it means Extremely large. It can handle large amount of data.
 
 MongoDB database vendor is MongoDB. We can use MongoDB anywhere (mobile, desktop, cloud). MongoDB is JavaScript based and behind the scene it uses Mozilla Spider Monkey engine.
 
-### Stack
+## Stack
 
 The technologies which can be used to develop web applications are called stack. 2 stacks are very popular with MongoDB.
 
@@ -16,17 +16,6 @@ The technologies which can be used to develop web applications are called stack.
 > MongoDB is document based aka NoSQL database.
 
 This database contains multiple collections (table in SQL) and each collection contains multiple documents (rows in SQL). Data is stored in separate documents and each document is independent of others.
-
-### Structure
-
-MongoDB physical database contains several logical databases. Each database contains several collections (table) and each collection contains several documents. Documents are like record/row in SQL database.
-
-### Examples
-
-- Shopping Cart database
-    - Customers, Products (collections)
-        - Each customer's full information. (document)
-        - Each Product's full information.
 
 > MongoDB represents data in JSON format and internally stores data in BSON (binary JSON)
 
@@ -39,22 +28,25 @@ MongoDB physical database contains several logical databases. Each database cont
 }
 // document2
 {
-  "name": "John Doe"
+  "name": "John Snow",
+  "address": "Moscow"
 }
 ```
 
 > Performance and flexibility is the biggest assets of MongoDB
 
-### Key Characteristics 
+## Key Characteristics 
 
-- Installation and setup is very easy.
-- All information related to a document will be stored in a single place. To retrieve data, it is not required to perform join operations and hence retrieval is very fast.
-- Documents are independent of each other and no fixed schema. Hence we can store unstructured data like videos, audio files etc.
-- We can perform operations like update existing document, delete document and inserting new documents very easily.
-- Retrieval data is in the form of JSON which can be understandable by any programming language.
-- We can store very huge amount of data and hence scalability is more.
+* Installation and setup is very easy.
+* All information related to a document will be stored in a single place. To retrieve data, it is not required to perform join operations and hence retrieval is very fast.
+* Documents are independent of each other and no fixed schema. Hence we can store unstructured data like videos, audio files etc.
+* We can perform operations like update existing document, delete document and inserting new documents very easily.
+* Retrieval data is in the form of JSON which can be understandable by any programming language.
+* We can store very huge amount of data and hence scalability is more.
 
-### Theory
+## Theory
+
+MongoDB physical database contains several logical databases. Each database contains several collections (table) and each collection contains several documents. Documents are like record/row in SQL database.
 
 Once we install MongoDB, we get `MongoDB Shell (client)` and `MongoDB Server`. These are JavaScript based applications. `MongoDB server` is responsible to store data in database. By using `MongoDB Shell` we can perform all CRUD operations.
 
@@ -74,17 +66,17 @@ From application (java, python) if we want to communicate with MongoDB database,
 * To check MongoDB server version - `$ mongod -version`
 * To check MongoDB shell version - `$ mongo -version`
 
-### Installation
+## Installation
 
 * [MongoDB Community Edition](https://www.mongodb.com/try/download/community)
 
 > you must have to add `mongodb bin` path in the environment variable.
 
-To store data you must have to create `data/db` directory inside a Drive (C/D/E or whatever) and run the following `mongod` command to start the MongoDB shell from the same drive.
+To store data you must have to create `data/db` directory inside a Drive and run the following `mongod` command to start the MongoDB shell from the same drive.
 
 you can also specify other location via `mongod --dbpath "location"`
 
-`mongod` is the command where you will store the data and `mongo` is command line tool to perform operations.
+`mongod` is the command that starts the server and `mongo` is command line tool to perform operations.
 
 ```js
 $ mongo // shell started
@@ -94,18 +86,18 @@ $ use abcDB // switch to abcDB database
 $ show collections // display all collections from a particular database
 ```
 
-- Default Databases `show dbs`
-- admin
-    - It is used to store authentication & authorization information.
-    - Used by administrator to perform users CRUD Operations and assign roles.
-- config
-    - To store config information of mongoDB server
-- local
-    - It is used by admin while performing replication process.
+* Default Databases `show dbs`
+* admin
+    * It is used to store authentication & authorization information.
+    * Used by administrator to perform users CRUD Operations and assign roles.
+* config
+    * To store config information of mongoDB server
+* local
+    * It is used by admin while performing replication process.
 
-### Data Formats
+## Data Formats
 
-* Client write JavaScript objects/JSON but MongoDB server stores them as BSON format.
+Client write JavaScript objects/JSON but MongoDB server stores them as BSON format.
 
 JS objects/JSON provides only handful of types (string, number, array, object, boolean, null) rest of the types are provided by BSON. also since BSON saves data as binary format, it requires less space compare to JSON.
 
@@ -127,7 +119,7 @@ db.getName() // name of the database you're currently in
 
 > Any word prefix with `$` means it is reserved word for mongoDB.
 
-### ObjectId
+## ObjectId
 
 For every document MongoDB server is associated with a unique ID, which is ObjectId. It behaves like primary key in relational databases. ObjectId is assigned to `_id` field. It is BSON type.
 
@@ -137,33 +129,33 @@ For every document MongoDB server is associated with a unique ID, which is Objec
 }
 ```
 
-* ObjectId is 12 bytes
+* ObjectId is 12 bytes:
     * first 4 bytes represents the timestamp when the documents was inserted
     * next 3 bytes represents machine id (host name)
     * the next 2 bytes represents process id
     * last 3 bytes represents random incremental value
 
-#### Generate Timestamp from ObjectId
+### Generate Timestamp from ObjectId
 
-* `db.collection.findOne()._id.getTimestamp()` - when this documents was created
+* `db.collection.findOne()._id.getTimestamp()` - return the document's creattion time
 
 By using `_id` field, we can provide its value. MongoDB server will generate its value (immutable ObjectId, which is unique per collection), if we do not provide any `_id` value. Duplicate `_id` is not possible.
 
-### CRUD Operation
+## CRUD Operation
 
-#### Insertion
+### Insertion
 
 There are 3 ways to insert documents into the collections
 
-- `db.collection.insert()` -- deprecated
-- `db.collection.insertOne({JS object})`
-- `db.collection.insertMany([{}, {}])`
+* `db.collection.insert()` -- deprecated
+* `db.collection.insertOne({JS object})`
+* `db.collection.insertMany([{}, {}])`
 
 ```js
 show dbs
-
 use durgaDB
 db.createCollection("Employees")
+
 db.Employees.insertMany([
     {
         "eno": 100,
@@ -189,14 +181,14 @@ db.Employees.insertMany([
 ])
 ```
 
-#### Retrieval
+### Retrieval
 
 There are 2 ways to read data from the collections
 
-- `db.collection.find({optional: condition})`
-    - default is all documents, if condition is absence.
-- `db.collection.findOne({optional: condition})`
-    - default is first document, if condition is absence.
+* `db.collection.find({optional: condition})`
+    * default is all documents, if condition is absence.
+* `db.collection.findOne({optional: condition})`
+    * default is first document, if condition is absence.
 
 ```js
 db.Employees.find()
@@ -210,27 +202,31 @@ let employee = db.Employees.findOne() // return 1st document
 printjson(employee)
 ```
 
-#### Update
+### Update
 
 There are 3 ways to update documents
 
-- `db.collection.updateOne({condition: value}, {$set: {key: value}})`
-- `db.collection.updateMany()`
-- `db.collection.replaceOne()`
+* `db.collection.updateOne({condition: value}, {$set: {key: value}})`
+* `db.collection.updateMany()`
+* `db.collection.replaceOne()`
 
 ```js
-db.Employees.updateOne({"ename": "John Doe"}, {$set: {"eaddress": "New Delhi"}})
+db.Employees.updateOne(
+    {"ename": "John Doe"}, 
+    {$set: {"eaddress": "New Delhi"}}
+)
+
 db.Employees.find()
 ```
 
 if `eaddress` doesn't exist in the document then it will create new `eaddress` property else replace old value with new value.
 
-#### Deletion
+### Deletion
 
 There are 2 ways to delete data from the collections
 
-- `db.collection.deleteOne()`
-- `db.collection.deleteMany()`
+* `db.collection.deleteOne()`
+* `db.collection.deleteMany()`
 
 ```js
 db.abcdDB.insertOne({
@@ -238,10 +234,12 @@ db.abcdDB.insertOne({
     "city": "Moscow"
 })
 
-db.abcdDB.deleteOne({"hello": "World"})
+db.abcdDB.deleteOne({
+    "hello": "World"
+})
 ```
 
-### Capped Collection
+## Capped Collection
 
 * Capped collections are fixed-size collections that insert and retrieve documents based on insertion order.
 * If the max number documents are reached/memory is exceeded then old data will be deleted based on timestamp.
@@ -249,8 +247,8 @@ db.abcdDB.deleteOne({"hello": "World"})
 
 ```js
 use ecommerceDB
-
 db.createCollection("Orders", {"capped": true, "size": 373658, "max": 1})
+
 db.Orders.insertOne({
     "product": "Mango",
     "price": "$20"
@@ -270,31 +268,32 @@ let orders = [
         "brand": "Square"
     }
 ]
+
 db.Orders.insertMany(orders)
-db.Orders.find().pretty() // soap
+db.Orders.find().pretty() // Soap
 ```
 
-### Insert documents from JavaScript file
+## Insert documents from JavaScript file
 
 ```js
 use studentDB
 
-db.createCollection("students");
-load('js-file-path.js')
+db.createCollection("students")
+load('file-path.js')
 
-db.students.find()
+db.students.find().count()
 ```
 
-### Insert documents from JSON file
+## Insert documents from JSON file
 
 * The data should be in the array form - `[{}, {}]`
 * Data must be valid JSON.
 
-##### Steps
+#### Steps to follow
 
-* `$ mongod` -> start mongoDB server
-* `$ mongo` -> start mongoDB shell
-* `$ mongoimport` -> to import json file | by default it is not available, install manually
+* `$ mongod` ➝ start mongoDB server
+* `$ mongo` ➝ start mongoDB shell
+* `$ mongoimport` ➝ to import json file | by default it is not available, install manually
     * https://www.mongodb.com/try/download/database-tools
     * https://www.mongodb.com/docs/database-tools/
     * copy `mongoimport.exe` file & paste it `mongoDB/server/version/bin/`
@@ -303,14 +302,14 @@ db.students.find()
 ```shell
 # mongoimport will create database and collections if they aren't available.
 # if collection is already available, new documents will be appened
-$ mongoimport --db dbName --collection collectionName --file ./json-file-path.json --jsonArray
+$ mongoimport --db dbName --collection collectionName --file ./file-path.json --jsonArray
 ```
 
-### Nested Documents
+## Nested Documents
 
 Sometimes we can take a document inside another documents, these type of dcouments are called nested documents or embedded documents. MongoDB supports 100 level of nesting.
 
-```json
+```js
 // books.json
 [
     {
@@ -370,7 +369,7 @@ Sometimes we can take a document inside another documents, these type of dcoumen
 $ mongoimport --db storedb --collection books --file ./books.json --jsonArray
 ```
 
-### Ordered Insertion in Bulk insert
+## Ordered Insertion in Bulk Insert
 
 We can perform bulk inserts by using `insertMany()` method. An array of objects will be inserted into the collection.
 
@@ -394,7 +393,7 @@ db.Cars.insertMany([
 ])
 ```
 
-By default, while performing bulk inserts if any of the object raise an error, rest of the objects won't be inserted. But the objects which are already inserted won't be roll back. [previous objects - inserted] -> insertion fail -> [next objects - won't be inserted]
+By default, while performing bulk inserts if any of the object raise an error, rest of the objects won't be inserted. But the objects which are already inserted won't be roll back. [previous objects - inserted] ➝ insertion fail ➝ [next objects - won't be inserted]
 
 ```js
 db.Cars.insertMany([
@@ -438,7 +437,7 @@ db.Cars.insertMany([
 db.Cars.find() // insertion _ids are 800, 900
 ```
 
-### Atomicity
+## Atomicity
 
 * How to rollback already inserted objects in case of any error in bulk inserts?
     * By using, transactions
@@ -459,7 +458,7 @@ If we want atomicity for bulk inserts then we should go for transcation concepts
 
 > Transcation means either all operations or none
 
-### writeConcern
+## writeConcern
 
 Whenever, we are performing insert operation, by default shell waits until getting acknowledgement. Server provides `{acknowledgement: true}` after insert operation. This may reduce the performance at client side.
 
@@ -490,7 +489,7 @@ db.collection.insertMany([{}, {}, {}], { writeConcern: {w: 3} })
 
 > writeConcern is applicable for any write operation like insert, update, and delete.
 
-### Reading data
+## Reading data
 
 We can fetch documents from the collection by using following methods
 
@@ -650,16 +649,19 @@ $ db.books.find().count() // 7
 * Find all documents where `no_of_reviews` is 3?
     * `db.books.find({no_of_reviews: 3}).pretty()`
 
-#### Querying nested documents
+### Querying nested documents
 
 If the value of a field again a document then nested property values we can access via `.` operator. In this case, key must be enclosed with quotes.
 
-* List out all documents where author's `callname` is `Neo`?
-    * `db.books.find({ "author.callname": "Neo" })`
-* List out all documents where author's profile contains `2` courses?
-    * `db.books.find({ "author.profile.courses": 2 })`
+```js
+// select all documents where author's callname is Neo?
+db.books.find({ "author.callname": "Neo" })
 
-#### Querying Arrays
+// select all documents where author's profile contains 2 courses?
+db.books.find({ "author.profile.courses": 2 })
+```
+
+### Querying Arrays
 
 * List out all documents where `tags` array contains `programming` element?
     * `db.books.find({ tags: "programming" }).pretty()`
@@ -672,98 +674,116 @@ If the value of a field again a document then nested property values we can acce
     * `db.books.find({tags: ["freeware", "language", "programming"]})`
     * Array order & case is matter
 
-### Query Operators
+## Query Operators
 
 Every operator prefix with `$` symbol.
 
-#### Comparison Operators
+### Comparison Operators
 
-- $lt
-- $lte
-- $gt
-- $gte
-- $ne
-- $eq
-- $in
-- $nin
+* $lt
+* $lte
+* $gt
+* $gte
+* $ne
+* $eq
+* $in
+* $nin
 
-Syntax: `db.collection.find({ key: {operator: value} })`
+> Syntax: `db.collection.find({ key: {operator: value} })`
 
-##### $eq
+#### $eq
 
 The `$eq` operator matches documents where the value of the field is equal to specified value.
 
-Syntax: `db.collection.find({ key: {$eq: value} })`  
+> Syntax: `db.collection.find({ key: {$eq: value} })`  
 Shortcut Syntax: `db.collection.find({ key: value })`
 
-* Select all documents where `no_of_reviews` is 3?
-    * `db.books.find({ no_of_reviews: {$eq: 3} })`
-* Select all documents where author's profile contains 2 courses?
-    * `db.books.find( {"author.profile.courses": {$eq: 2} }).pretty()`
-* Select all documents where `tags` array contains `database` element?
-    * `db.books.find({ tags: {$eq: "database"} }).pretty()`
-* Select all documents where `tags` array is exactly as `["language", "freeware", "programming"]`
-    * `db.books.find({ tags: {$eq: [language", "freeware", "programming"]} })`
+```js
+// Select all documents where `no_of_reviews` is 3?
+db.books.find({ no_of_reviews: {$eq: 3} })
 
-##### $ne
+// Select all documents where author's profile contains 2 courses?
+db.books.find( {"author.profile.courses": {$eq: 2} }).pretty()
+
+// Select all documents where `tags` array contains `database` element?
+db.books.find({ tags: {$eq: "database"} }).pretty()
+
+// Select all documents where `tags` array is exactly as `["language", "freeware", "programming"]`
+db.books.find({ tags: {$eq: [language", "freeware", "programming"]} })`
+```
+
+#### $ne
 
 `$ne` means not equal. We can use `$ne` operator to select all documents where the value of the field is not equal to specified value.
 
-Syntax: `db.collection.find({ key: {$ne: value} })`
+> Syntax: `db.collection.find({ key: {$ne: value} })`
 
-* Select all documents where `no_of_reviews` not 3?
-    * `db.books.find({ no_of_reviews: {$ne: 3} })`
+```js
+// Select all documents where `no_of_reviews` not 3?
+db.books.find({ no_of_reviews: {$ne: 3} })
+```
 
-If the specified `field` is not present in the document, that document will also be included. Only happens when we perform `not equal/ not in` action.
+If the specified `key` is not present in the document, that document will also be included. Only happens when we perform `not equal/ not in` action.
 
-##### $gt
+#### $gt
 
 `$gt` means greater than operator. We can use `$gt` operator to select all documents where the value of key is `>` specified value.
 
-Syntax: `db.collection.find({ key: {$gt: value} })`
+> Syntax: `db.collection.find({ key: {$gt: value} })`
 
-* Select all documents where `no_of_reviews` are greater than 3?
-    * `db.books.find({ no_of_reviews: {$gt: 3} })`
+```js
+// Select all documents where `no_of_reviews` are greater than 3?
+db.books.find({ no_of_reviews: {$gt: 3} })`
+```
 
-##### $gte
+#### $gte
 
 `$gte` means greater than or equal to operator. We can use `$gte` operator to select all documents where the value of key is `>=` specified value.
 
-Syntax: `db.collection.find({ key: {$gte: value} })`
+> Syntax: `db.collection.find({ key: {$gte: value} })`
 
-* Select all documents where `no_of_reviews` are greater than or equal to 3?
-    * `db.books.find({ no_of_reviews: {$gte: 3} })`
+```js
+// Select all documents where `no_of_reviews` are greater than or equal to 3?
+db.books.find({ no_of_reviews: {$gte: 3} })
+```
 
-##### $lt
+#### $lt
 
 `$lt` means less than operator. We can use `$lt` operator to select all documents where the value of key is `<` specified value.
 
-Syntax: `db.collection.find({ key: {$lt: value} })`
+> Syntax: `db.collection.find({ key: {$lt: value} })`
 
-* Select all documents where `no_of_reviews` are less than 3?
-    * `db.books.find({ no_of_reviews: {$lt: 3} })`
+```js
+// Select all documents where `no_of_reviews` are less than 3?
+db.books.find({ no_of_reviews: {$lt: 3} })`
+```
 
-##### $lte
+#### $lte
 
 `$lte` means less than or equal to operator. We can use `$lte` operator to select all documents where the value of key is `<=` specified value.
  
-Syntax: `db.collection.find({ key: {$lte: value} })`
+> Syntax: `db.collection.find({ key: {$lte: value} })`
 
-* Select all documents where `no_of_reviews` are less than or equal to 3?
-    * `db.books.find({ no_of_reviews: {$lte: 3} })`
+```js
+// Select all documents where `no_of_reviews` are less than or equal to 3?
+db.books.find({ no_of_reviews: {$lte: 3} })`
+```
 
-##### $in
+#### $in
 
 We can use `$in` operator to select all documents where the value of a field  equals any value in specified array.
 
-Syntax: `db.collection.find({ key: {$in: [value1, value2, value3...]} })`
+> Syntax: `db.collection.find({ key: {$in: [value1, value2, value3...]} })`
 
-* Select all documents where `no_of_reviews` in `[1, 4, 5]`?
-    * `db.books.find({ no_of_reviews: {$in: [1, 4, 5]} })`
-* Select all documents where `tags` array contains `database` or `programming`
-    * `db.books.find( {tags: {$in: ["database", "programming"] }} )`
+```js
+// Select all documents where `no_of_reviews` in `[1, 4, 5]`?
+db.books.find({ no_of_reviews: {$in: [1, 4, 5]} })
 
-##### $nin
+// Select all documents where `tags` array contains `database` or `programming`
+db.books.find( {tags: {$in: ["database", "programming"] }} )
+```
+
+#### $nin
 
 We can use `$nin` operator to select all documents where the value of a field not present in specified array.
 
@@ -771,63 +791,80 @@ We can use `$nin` operator to select all documents where the value of a field no
     * the field value doesn't present in specified array.
     * the field doesn't exist.
 
-Syntax: `db.collection.find({ key: {$nin: [value1, value2, value3...]} })`
+> Syntax: `db.collection.find({ key: {$nin: [value1, value2, value3...]} })`
 
-* Select all documents where `no_of_reviews` not in `[1, 4, 5]`?
-    * `db.books.find({ no_of_reviews: {$nin: [1, 4, 5]} })`
-* Look at the query `db.books.find({exams: 5}).count()`
-    * all documents will return, cause `exams` is not a valid field in the books collection
+```js
+// Select all documents where `no_of_reviews` not in `[1, 4, 5]`?
+db.books.find({ no_of_reviews: {$nin: [1, 4, 5]} })
 
-#### Logical Operators
+// Look at the query `db.books.find({exams: 5}).count()`
+// all documents will return, cause `exams` is not a valid field in the books collection
+```
 
-- $or
-- $and
-- $not
-- $nor
+### Logical Operators
 
-##### $or Operator
+* $or
+* $and
+* $not
+* $nor
+
+#### $or Operator
 
 `$or` performs logical or operator on an array of 2 or more conditions and selects the documents that satisfy at least one condition.
 
-Syntax: `db.collection.find({ $or: [condition1, condition2, conditionN] })`
+> Syntax: `db.collection.find({ $or: [condition1, condition2, conditionN] })`
 
-* Select all documents where tags array contains `programming` or `no_of_reviews > 3`?
-    * `db.books.find({ $or: [{ no_of_reviews: {$gt: 3} }, { tags: {$in: "programming"} }] })`
-* Select all documents where either `no_of_reviews < 3` or `{downloadable: true}` or `author` profile contains at least `2` books?
-    * `db.books.find({ $or: [ {no_of_reviews: {$lt: 3}}, {downloadable: {$eq: true}}, {"author.profile.books": {$gte: 2}} ] })`
+```js
+// Select all documents where tags array contains `programming` or `no_of_reviews > 3`?
+db.books.find({ $or: [{ no_of_reviews: {$gt: 3} }, { tags: {$in: "programming"} }] })
 
-##### $nor Operator
+// Select all documents where either `no_of_reviews < 3` or `{downloadable: true}` or `author` profile contains at least `2` books?
+db.books.find({ 
+    $or: [ 
+            {no_of_reviews: {$lt: 3}}, 
+            {downloadable: {$eq: true}}, 
+            {"author.profile.books": {$gte: 2}} 
+    ] 
+})
+```
+
+#### $nor Operator
 
 It is inverse of `$or` Operator. $nor` performs a logical NOR operation on an array of one or more conditions and selects the documents that fails all query condition.
 
-- $or: At least one condition is satisfied
-- $nor: Neither condition is satisfied aka all condition fails
+* $or: At least one condition is satisfied
+* $nor: Neither condition is satisfied aka all condition fails
 
-Syntax: `db.collection.find({ $or: [condition1, condition2, conditionN] })`
+> Syntax: `db.collection.find({ $or: [condition1, condition2, conditionN] })`
 
 Look at the below query
 
 ```js
-db.books.find({ $nor: [{no_of_reviews: {$gt: 3}}, {downloadable: true}] })
+db.books.find({ 
+    $nor: [
+        {no_of_reviews: {$gt: 3}}, 
+        {downloadable: true}
+    ]
+})
 ```
 
 It selects the documents where below conditions (both in a single document) are matched.
 
-- The `no_of_reviews` is less than or equal to 3
-- `downloadable` is false
-- It also picks up such documents that don't contain neither `no_of_reviews` nor `downloadable` fields.
+* The `no_of_reviews` is less than or equal to 3
+* `downloadable` is false
+* It also picks up such documents that don't contain neither `no_of_reviews` nor `downloadable` fields.
 
 #### $and Operator
 
 `$and` performs logical AND Operation on an array of one or more expressions and selects the documents that satisfy all expressions in the array.
 
-Syntax: `db.collection.find({$and: [condition1, condition2, conditionN]})`   
+> Syntax: `db.collection.find({$and: [condition1, condition2, conditionN]})`   
 Shortcut Syntax: `db.collection.find({ field1: value1, field2: value2 })`
 
-* Select all documents where `no_of_reviews <= 3` and `{downloadable: true}`
-    * `db.books.find( $and: [{no_of_reviews: {$gte: 3}}, {downloadable: true}] )`
-
 ```js
+// Select all documents where `no_of_reviews <= 3` and `{downloadable: true}`
+db.books.find( $and: [{no_of_reviews: {$gte: 3}}, {downloadable: true}] )
+
 // students.json
 [
     {
@@ -874,18 +911,19 @@ Shortcut Syntax: `db.collection.find({ field1: value1, field2: value2 })`
 
 $ mongoimport --db storeDB --collection students --file ./students.json --jsonArray
 $ db.students.find().count() // 10
+
+// Select all documents where `marks` are less than 85 and greater than 45?
+db.students.find( $and: [{marks: {$gt: 45}}, {marks: {$lt: 85}}] )
+db.students.find( {marks: {$gt: 45}, marks: {$lt: 85}} )
+// if both conditions are on same field `{ marks: < 50, marks: >= 35 }`, 
+// then shortcut syntax won't work as expected. Because duplicate keys are not allowed in JS object.
 ```
 
-* Select all documents where `marks` are less than 85 and greater than 45?
-    * `db.students.find( $and: [{marks: {$gt: 45}}, {marks: {$lt: 85}}] )`
-    * `db.students.find( {marks: {$gt: 45}, marks: {$lt: 85}} )`
-    * if both conditions are on same field `{ marks: < 50, marks: >= 35 }`, then shortcut syntax won't work as expected. Because duplicate keys are not allowed in JS object.
-
-##### $not Operator
+#### $not Operator
 
 `$not` operator performs logical NOT operation on the specified operator expression and selects the documents that do not match operator expression. This includes also the documents that don't contain the field.
 
-Syntax: `db.collection.find({ key: {$not: {$gt: value}} })`
+> Syntax: `db.collection.find({ key: {$not: {$gt: value}} })`
 
 Look at the query `db.students.find( {marks: {$not: {$gt: 55}}})`
 
@@ -893,30 +931,34 @@ Look at the query `db.students.find( {marks: {$not: {$gt: 55}}})`
     * where `marks >= 55`.
     * `marks` field doesn't exist in the document.
 
-#### Element Query Operators
+### Element Query Operators
 
-##### $exists
+#### $exists
 
-Syntax: `db.collection.find({ key: {$exists: <boolean>} })`
+> Syntax: `db.collection.find({ key: {$exists: <boolean>} })`
 
-- If `boolean=true` then select all documents that contain specified field even value of the field is `null`.
-- If `boolean=false` then select all documents that don't contain specified field.
+* If `boolean=true` then select all documents that contain specified field even value of the field is `null`.
+* If `boolean=false` then select all documents that don't contain specified field.
 
-* Select all fields which contains `no_of_reviews` field?  
-    * `db.collection.find({ no_of_reviews: {$exists: true} })`
-* Select all fields which don't contains `no_of_reviews` field?    
-    * `db.collection.find({ no_of_reviews: {$exists: false} })`
-* Select all documents which contains `gf` field also `marks` are higher than 70?  
-    * `db.collection.find({ gf: {$exists: true}, marks: {$gt: 70} })`
+```js
+// Select all fields which contains `no_of_reviews` field?  
+db.collection.find({ no_of_reviews: {$exists: true} })
 
-##### $type
+// Select all fields which don't contains `no_of_reviews` field?    
+db.collection.find({ no_of_reviews: {$exists: false} })
+
+// Select all documents which contains `gf` field also `marks` are higher than 70?  
+db.collection.find({ gf: {$exists: true}, marks: {$gt: 70} })
+```
+
+#### $type
 
 `$type` operator selects the documents where value of a field is of a particular type. We've to specify the type as BSON type.
 
-Syntax: `db.collection.find({key: {$type: <bson type>}})`  
+> Syntax: `db.collection.find({key: {$type: <bson type>}})`    
 Syntax: `db.collection.find({key: {$type: [<bson type1>, <bosn type2]}})`
 
-> we can specify either number or alias name for BSON type
+we can specify either number or alias name for BSON type.
 
 ![available-types](https://i.ibb.co/0Q4ThZS/image.png)
 
@@ -925,7 +967,7 @@ Syntax: `db.collection.find({key: {$type: [<bson type1>, <bosn type2]}})`
 > double is 64 bits & decimal is 128 bits floating point value.
 
 ```js
-use phoneDB;
+use phoneDB
 db.createCollection("phonebook")
 
 db.phonebook.insertMany([
@@ -961,3 +1003,86 @@ db.phonebook.find({
 })
 ```
 
+### Evaluation Query Operators
+
+* $expr
+* $regex
+* $mod
+* $jsonSchema
+* $text
+* $where (deprecated)
+
+```js
+use expensesdb
+db.createCollection("homeBudget")
+
+db.homeBudget.insertMany([
+    {category: "home food", budget: 1000, spent:1500},
+    {category: "outside food", budget: 1000, spent: 2000},
+    {category: "rent", budget: 1500, spent:1500},
+    {category: "education", budget: 2000, spent:1000},
+    {category: "clothes", budget:750, spent:1500},
+    {category: "entertinement", budget: 1000, spent:2500},
+    {category: "Travel", budget: 5000, spent:4000},
+    {category: "Print", budget: 1000, spent:1200}
+])
+
+// select all documents where budget value is 1000
+db.homeBudget.find({
+   budget: 1000 
+})
+
+// select all documents where category is rent 
+db.homeBudget.find({
+   category: 'rent' 
+})
+```
+
+#### $expr operator
+
+Within the same document when You've to compare 2 fields, use `$expr` operator. `$expr` operator is very commounly use within aggregate function.
+
+> Syntax: `db.collection.find({ $expr: {<expression>} })`
+
+```js
+// select all documents where spent amount exceeds budget amount?
+db.homeBudget.find({
+   $expr: {$gt: ["$spent", "$budget"]}
+})
+
+// select all documents where spent amount less than or equal to budget amount?
+db.homeBudget.find({
+   $expr: {$lte: ["$spent", "$budget"]}
+})
+```
+
+#### $regex
+
+We can use `$regex` operator to select documents where values match a specified regex pattern. By default case is considered. If you want to ignore case then add `$optioans: "i"`
+
+> Syntax: `db.collection.find({ key: {$regex: /pattern/, $options: "i"} })`  
+Syntax: `db.collection.find({ key: {$regex: /pattern/i} })`  
+Syntax: `db.collection.find({ key: {$regex: "pattern", $options: "i"} })`  
+Syntax: `db.collection.find({ key: /pattern/i })`  
+
+```js
+// select all documents where category contains "food" word?
+db.homeBudget.find({category: /food/})
+db.homeBudget.find({category: {$regex: "food"}})
+db.homeBudget.find({category: {$regex: /food/}})
+
+// select all documents where category value starts with "e"?
+db.homeBudget.find({ category: /^e/ })
+db.homeBudget.find({ category: {$regex: "^e"} })
+db.homeBudget.find({ category: {$regex: /^e/} })
+
+// select all documents where category value starts with either "e" or "c" ?
+db.homeBudget.find({ category: /^e|c/ })
+db.homeBudget.find({ category: /^[ec]/ })
+
+// select all documents where category value ends with either "t" or "n" ?
+db.homeBudget.find({ category: /[tn]$/ })
+
+// select all documents where category value starts with either "T/t" or "P" ?
+db.homeBudget.find({ category: /^[tTP]/i })
+```
