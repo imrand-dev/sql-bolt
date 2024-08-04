@@ -1560,7 +1560,7 @@ It finds the first document that matches the filter criteria and perform require
 
 > Syntax: `db.collection.updateOne(filter, update, options)`
 
-#### #### updateMany
+#### updateMany
 
 To update all documents that match the specfied filter criteria.
 
