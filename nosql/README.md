@@ -6,6 +6,8 @@ MongoDB comes from Humongous, it means Extremely large. It can handle large amou
 
 MongoDB database vendor is MongoDB. We can use MongoDB anywhere (mobile, desktop, cloud). MongoDB is JavaScript based and behind the scene it uses Mozilla Spider Monkey engine.
 
+> [MongoDB Cheat Sheet](./MongoDB-Cheatsheet.md)
+
 ## Stack
 
 The technologies which can be used to develop web applications are called stack. 2 stacks are very popular with MongoDB.
@@ -305,6 +307,12 @@ db.students.find().count()
 $ mongoimport --db dbName --collection collectionName --file ./file-path.json --jsonArray
 ```
 
+## Insert documents from CSV file
+
+```js
+$ mongoimport --db dbName --collection collectionName --type csv --headline --drop ./file-path.csv
+```
+
 ## Nested Documents
 
 Sometimes we can take a document inside another documents, these type of dcouments are called nested documents or embedded documents. MongoDB supports 100 level of nesting.
@@ -494,6 +502,40 @@ db.collection.insertMany([{}, {}, {}], { writeConcern: {w: 3} })
 We can fetch documents from the collection by using following methods
 
 * `db.collection.find({ key: value })`
+    * NOTE: `find()` return a cursor object. By using this cursor, we get batch (single batch is 20 documents) of documents (pagination). To customize this default behavior set `DBQuery.shellBatchSize=5`.
+    * Basic Cursor Methods:
+        * count
+        * next [1 document at a time]
+            ```js
+            // BAD Practice
+            db.collection.find().next() // return a document
+            db.collection.find().next() // return previous document again
+            // every time cursor object gets reset, that's why same document
+
+            // GOOD Practice
+            let cursor = db.collection.find()
+            cursor.next() // return BSON object
+            cursor.next()
+            ```
+        * hasNext
+            ```js
+            let myCursor = db.collection.find()
+            while (myCursor.hasNext()) {
+                printjson(myCursor.next())
+            }
+
+            myCursor.forEach((doc) => {
+                printjson(doc)
+            })
+
+            // shortcut
+            myCursor.forEach(print)
+            ```
+        * toArray
+    * Cursor Methods for Pagination:
+        * limit
+        * skip
+        * batchSize
     * if we don't provide any query inside `find()`, all documents will be returned.
     * when we provide query inside `find()`, all matched documents will be returned.
 * `db.collection.findOne({ key: value })`
@@ -933,6 +975,9 @@ Look at the query `db.students.find( {marks: {$not: {$gt: 55}}})`
 
 ### Element Query Operators
 
+* $exists
+* $type
+
 #### $exists
 
 > Syntax: `db.collection.find({ key: {$exists: <boolean>} })`
@@ -1086,3 +1131,625 @@ db.homeBudget.find({ category: /[tn]$/ })
 // select all documents where category value starts with either "T/t" or "P" ?
 db.homeBudget.find({ category: /^[tTP]/i })
 ```
+
+#### $mod
+
+We can use `$mod` operator to select documents where the value of the field divided by a divisor has a specified reminder.
+
+> Syntax: `db.collection.find({ key: {$mod: [divisor, reminder]} })`
+
+```js
+use shoppingdb
+db.createCollection("shop")
+
+db.shop.insertOne ({_id: 1, item: "soaps", quantity: 13})
+db.shop.insertOne ({_id: 2, item: "books", quantity: 10})
+db.shop.insertOne({_id: 3, item: "pens", quantity: 15})
+db.shop.insertOne ({_id: 4, item: "pencils", quantity: 17})
+
+// select all documents where quantity value is divisible by 5
+db.shop.find({
+    quantity: {
+        $mod: [5, 0] // [divisor=5, reminder=0]
+    }
+})
+
+// select all documents where quantity value is divisible by 4 and has a reminder 1
+db.shop.find({
+    quantity: {
+        $mod: [4, 1]
+    }
+})
+```
+
+#### $jsonSchema
+
+We can select documents based on specified JSON schema by using this operator.
+
+> Syntax: 
+
+#### $text
+
+related to index concepts, coming soon.
+
+> Syntax: 
+
+### Array Query Operators
+
+* $all
+* $elemMatch
+* $size
+
+```js
+use coursedb
+db.createCollection("courses")
+
+db.courses.insertMany([
+    {
+        _id:1,
+        name:"Java",
+        tags:["language", "programming", "easy","ocean"]
+    },
+    {
+        _id:2, 
+        name: "Python", 
+        tags: ["language", "programming", "easy"]
+    },
+    {
+        _id:3, 
+        name: "C", 
+        tags: ["language", "performance"]
+    },
+    {
+        _id:4, 
+        name: "Oracle", 
+        tags: ["database","sql","cloud"]
+    },
+    {
+        _id:5, 
+        name: "MongoDB", 
+        tags: ["database", "nosql","cloud"]
+    },
+    {
+        _id:6, 
+        name: "Devops", 
+        tags: ["culture"]
+    }
+])
+```
+
+#### $all
+
+We can use `$all` operator to select documents where array contains all specified elements.
+
+> Syntax: `db.collection.find({ key: {$all: [val1, val2, val3]} })`
+
+```js
+// select all documents where tags array contains "database" and "cloud" elements?
+db.courses.find({
+    tags: {$all: ["database", "cloud"] }
+})
+
+// NOTE: Order is not important and also it's not exact match
+// Also, we can solve this problem with $and operator
+db.courses.find({
+    $and: [
+        {tags: "database"},
+        {tags: "cloud"}
+    ]
+})
+
+// select all documents where tags array contains "language" and "programming"
+db.courses.find([
+    tags: {$all: ["language", "programming"]}
+]) 
+```
+
+#### $elemMatch
+
+We can use `$elemMatch` (any() in python) operator to select documents where at least one element of the array matches the specified query criteria. 
+
+> Syntax: `db.collection.find({ key: {$eleMatch: {<query1>, <query2>...}} })`
+
+```js
+db.students.drop()
+db.createCollection("students")
+
+db.students.insertOne ({_id: 1, name: "Durga", marks: [82,35,99]})
+db.students.insertOne({_id: 2, name: "Ravi", marks: [75,90,95]})
+
+// Select documents where student has at-least one subject marks greater than or equal to 80 but less than 90?
+db.students.find({
+    marks: { $elemMatch: {$gte: 80, $lt: 90} }
+})
+
+// ?
+db.courses.find({
+    tags: {
+        $elemMatch: ["language", "programming"]
+        $elemMatch: { tags: "language", tags: "programming"}
+    }
+})
+```
+
+#### $size
+
+We can use `$size` operator to select documents based on specified array size
+
+> Syntax: `db.collection.find({ key: {$size: n} })`
+
+```js
+// Select documents that contains only 3 elements in marks array?
+db.students.find({
+    marks: { $size: 3 }
+});
+```
+
+## Cursor Methods
+
+### Helper methods
+
+* limit
+* skip
+* sort
+
+> https://www.codemzy.com/blog/mongodb-skip-limit-order
+
+#### limit
+
+> Syntax: `db.collection.find().limit(n)`
+
+If there are fewer than `n` documents matching your query in the collection, only the number of matching documents will be returned; limit sets an upper limit, not a lower limit.
+
+#### skip
+
+> Syntax: `db.collection.find().skip(n)`
+
+This will skip the first `n` matching documents and return the rest of the matches. If there are fewer than `n` documents in your collection, it will not return any documents.
+
+> When you chain `skip()` and `limit()`, the method chaining order does not affect the results. The server always applies the `skip` before it applies the `limit` - even if you put `limit` first.
+
+#### sort
+
+> Syntax: `db.collection.find().sort({key: 1/-1})`
+
+sort takes an object: a set of key/value pairs where the keys are key names and the values are the sort directions. The sort direction can be 1 (ascending) or −1 (descending). If multiple keys are given, the results will be sorted in that order.
+
+### Projection
+
+Get required document fields instead of all fields called projection
+
+```sql
+select * from employees; -- wiihout projection
+select full_name, age from employees; -- with projection
+```
+
+> Syntax: `db.collection.find(filter, projection)`
+
+If we are providing projection list, compulsory we should provide `filter` object also, atleast empty object `{}`
+
+```js
+// both are same
+db.collection.find().pretty()
+db.collection.find({}, {}).pretty()
+
+// select only `title` and `no_of_reviews` from books collection
+db.books.find({}, {
+    "title": 1, // 1 mean project this field
+    "no_of_reviews": 1, // 0 (default) means exclude/not project this field
+    "_id": 0 // by default _id field is included, if u want to exclude it use 0
+})
+
+// select all documents where `no_of_reviews` is >= 3 and project the following fields - title, no_of_reviews, isbn
+db.books.find({no_of_reviews: {$gte: 3}}, {
+    "no_of_reviews": 1,
+    "isbn": 1,
+    "title": 1,
+    "_id": 0
+})
+
+// nested projection
+db.books.find({no_of_reviews: {$gte: 3}}, {
+    "no_of_reviews": 1,
+    "isbn": 1,
+    "title": 1,
+    "author.profile.books": 1
+})
+
+// array projection
+db.books.find({no_of_reviews: {$gte: 3}}, {
+    "no_of_reviews": 1,
+    "tags": 1,
+    "_id_": 0
+})
+```
+
+### Array elements Project Operators
+
+* $
+* $elemMatch
+* $slice
+
+```js
+db.books.find({ tags: "programming" }).pretty()
+db.books.find({ tags: "programming" }, {title: 1, tags: 1, _id: 0})
+
+// select title and tags from books collection but tags should return only "programming" element not all elements
+db.books.find({ tags: "programming" }, {title: 1, "tags.$": 1, _id: 0})
+```
+
+#### $
+
+We can use `$` operator to project the first element in an array that matches query condition.
+
+> Syntax: `db.collection.find({query}, {"array.$": 1})`
+
+```js
+use studentDB
+db.createCollection("student")
+
+db.students.insertOne({_id:1, name: "Durga", year: 1, marks: [70,87,90]})
+db.students.insertOne ({_id: 2, name: "Ravi", year: 1, marks: [90,88,92]})
+db.students.insertOne ({_id: 3, name: "Shiva", year: 1, marks: [85,100,90]}) 
+db.students.insertOne ({_id:4, name: "Durga", year:2, marks: [79,85,80]}) 
+db.students.insertOne({_id: 5, name: "Ravi", year:2, marks: [88,88,92]}) 
+db.students.insertOne ({_id: 6, name: "Shiva", year:2, marks: [95,98,96]})
+
+// ...
+db.students.find({
+  year: 1,
+  marks: {
+    $gt: 85
+  }
+}, {
+  _id: 0,
+  "marks.$": 1
+})
+
+/* output
+{ "name" : "Durga", "marks" : [ 87 ] }
+{ "name" : "Ravi", "marks" : [ 90 ] }
+{ "name" : "Shiva", "marks" : [ 100 ] }
+*/
+
+// WARNING
+// If there is no query condition or if query condition won't include array then
+// we cannot use $ operator, otherwise we will get an error.
+
+db.students.find({}, {
+    _id: 0,
+    "marks.$": 1
+}) 
+
+db.students.find(
+    {
+        year: 1
+    },
+    {
+         _id: 0,
+        "marks.$": 1
+    }
+)
+
+// marks must be include in the query
+```
+
+#### $elemMatch
+
+We can use `$elemMath` to project first element in the array that matches specified `$elemMatch` condition. It doesn't consider query condition.
+
+> Syntax: `db.collection.find({}, {array: {$elemMatch: {condition}}})`
+
+```js
+db.students.find({}, {
+    name: 1,
+    _id: 0,
+    year: 1,
+    marks: {
+        $elemMatch: {
+            $lt: 95
+        }
+    }
+})
+
+/*
+{ "name" : "Durga", "marks" : [ 70 ] }
+{ "name" : "Ravi", "marks" : [ 90 ] }
+{ "name" : "Shiva", "marks" : [ 85 ] }
+{ "name" : "Durga", "marks" : [ 79 ] }
+{ "name" : "Ravi", "marks" : [ 88 ] }
+{ "name" : "Shiva" }
+*/
+```
+
+#### Difference between `$` and `$elemMatch`?
+
+Both operators project the first matching element from an array based on condition. But `$` operator selects array element based on query condition. But `$elemMatch` selects based on its condition. 
+
+```js
+db.students.find({
+    year: 1,
+    marks: {
+        $gte: 85
+    }
+}, {
+    _id: 0,
+    name: 1,
+    "marks.$": 1
+})
+
+/*
+{ "name" : "Durga", "marks" : [ 87 ] }
+{ "name" : "Ravi", "marks" : [ 90 ] }
+{ "name" : "Shiva", "marks" : [ 85 ] }
+*/
+
+db.students.find({
+    year: 1,
+    marks: {
+        $gte: 85
+    }
+}, {
+    _id: 0,
+    name: 1,
+    marks: {
+        $gt: 89
+    }
+})
+
+/*
+{ "name" : "Durga", "marks" : [ 90 ] }
+{ "name" : "Ravi", "marks" : [ 90 ] }
+{ "name" : "Shiva", "marks" : [ 100 ] }
+*/
+```
+
+#### $slice
+
+By using `$slice` operator we can select required number of elements in the array.
+
+> Syntax: `db.collection.find({}, {array: {$slice: n}})`
+
+```js
+// first 2 marks element will be selected
+db.students.find({}, {_id: 0, name: 1, marks: {$slice: 2}})
+
+// last 2 marks element will be selected
+db.students.find({}, {_id: 0, name: 1, marks: {$slice: -2}})
+```
+
+##### To skip number of elements
+
+> Syntax: `db.collection.find({}, {array: {$slice: [n1, n2]}})`
+
+Skip `n1` elements and then select `n2` number of elements.
+
+```js
+db.students.find({}, {_id: 0, name: 1, marks: {$slice: [2, 1]}})
+```
+
+## Update data
+
+We can perform updation like
+
+* Overwrite existing value of a particular field with new value
+* Add a new field for selected document
+* Remove an existing field from document
+* Rename an existing field
+
+Perform updation
+
+* Update methods
+    * updateOne()
+    * updateMany()
+    * update() -- deprecated
+* Update operators
+    * $set
+    * $unset
+    * $rename
+    * $inc
+    * $min
+    * $max
+    * $mul
+
+### Update methods
+
+#### updateOne
+
+It finds the first document that matches the filter criteria and perform required updation. It will perform updation for a single document.
+
+> Syntax: `db.collection.updateOne(filter, update, options)`
+
+#### #### updateMany
+
+To update all documents that match the specfied filter criteria.
+
+> Syntax: `db.collection.update(filter, update, options)`
+
+#### update
+
+We can use this method to update either a single document or multiple documents. By default it updates query matched single document only.
+
+> Syntax: `db.collection.update(filter, update, options: {multi: true})`
+
+```js
+use abcDB
+db.createCollection("employees")
+
+db.employees.insertOne({_id:1, eno: 100, ename: "Sunny", esal: 1000, eaddr: "Mumbai"}) 
+db.employees.insertOne({_id:2, eno: 200, ename: "Bunny", esal: 2000, eaddr: "Hyderabad"}) 
+db.employees.insertOne({_id: 3, eno: 300, ename: "Chinny", esal: 3000, eaddr: "Mumbai"}) 
+db.employees.insertOne({_id:4, eno: 400, ename: "Vinny", esal: 4000, eaddr: "Delhi"}) 
+db.employees.insertOne({_id: 5, eno: 500, ename: "Pinny", esal: 5000, eaddr: "Chennai"}) 
+db.employees.insertOne({_id: 6, eno: 600, ename: "Tinny", esal: 6000, eaddr: "Mumbai"}) 
+db.employees.insertOne({_id:7, eno: 700, ename: "Zinny", esal: 7000, eaddr: "Delhi"})
+
+// update sunny's salary
+db.employees.updateOne({_id: 1}, {$set: {esal: 99899}})
+
+// update all mumbai based employees salary to 7777?
+db.employees.updateMany({eaddr: "Mumbai"}, {$set: {esal: 7777}})
+
+// update all delhi based employees salary to 8585?
+db.employees.update({eaddr: "Delhi"}, {$set: {esal: 8585}}, {multi: true})
+```
+
+### Update operators
+
+#### $set
+
+we can use `$set` operator to set the value of the field in matched document.
+
+If the specifed field doesn't exist, `$set` will add a new field with provided value.
+
+```js
+// update sunny document
+db.employees.updateOne({_id: 1}, {$set: {husband: "daniyel"}})
+
+// update documents where esal >= 4000
+db.employees.update({esal: {$gte: 4000}}, {$set: {friend: "guest"}}, {multi: true})
+```
+
+#### $unset
+
+To delete the specified field
+
+> Syntax: `db.employees.update(query, {$unset: {field: "", field2: ""}})`
+
+The specfied value in the `$unset` expression `""` doesn't impact operation.
+
+```js
+// delete esal and husband fields where ename is Sunny?
+// if the specfied field is not avaiable to delete, no error wil be thrown
+db.employees.update({ename: "Sunny"}, {$unset: {esal: 0, husband: ""}})
+
+// remove fields husband and friend where esal is < 8000
+db.employees.update({esal: {$lt: 8000}}, {$unset: {husband: "", friend: ""}}, {multi: true})
+```
+
+#### $rename
+
+We can use `$rename` to rename the field 
+
+> Syntax: `db.collection.updateOne(query, {$rename: {oldFieldName: newName, ....}})`
+
+```js
+
+// if the required $rename field doesn't exist in document then nothing will happen/no error will be thrown
+
+// how $rename internally behaves?
+// first query matching operation then internally store $rename fields's value to somewhere then 
+// $unset operation performs on $rename fields, then $set operation performs with new field and stored value.
+
+// rename esal as salary and eaddr as city?
+db.employees.updateMany(
+    {},
+    {$rename: {
+        esal: "salary",
+        eaddr: "city"
+    }}
+)
+
+// rename eaddr to city?
+{
+    no: 1000,
+    salary: 100,000
+    city: "KK",
+    eaddr: "Moscow"
+}
+
+// first eaddr's value will be stored in memory, then $unset operation will be performed
+// on eaddr and city (new name, if exist). Then $set operation will be happened as city: "Moscow"
+{
+    no: 1000,
+    salary: 100,000
+    city: "Moscow"
+}
+```
+
+#### $inc
+
+To perform increment or decrement of field value with specified amount. If amount is positive then increment, if amount is negative then decrement.
+
+> Syntax: `db.collection.update(query, {$inc: {key: value}})`
+
+```js
+// increment all employees salary by 5000 (bonus)
+db.employees.updateMany({}, {$inc: {esal: 5000}})
+
+// decrement salary 1000 for sunny
+db.employees.updateOne({ename: "Sunny"}, {$inc: {esal: -1000}})
+
+// if the specified field doesn't exist, $inc creat that field and sets that field to specfied value.
+db.employees.updateOne({}, {$inc: {age: 2}})
+
+// Error, multiple update on same field at a time. perform one operation on same field at a time
+db.employees.updateeMany(
+    {},
+    {
+        $inc: {
+            esal: 5000
+    },
+        $set: {
+            esal: 50000
+    }
+})
+```
+
+#### $min
+
+`$min` operator updates the value of the field to specified value if specified value is < current value. If field doesn't exist it will create new one and perform `$set` operation.
+
+* $min(providedValue, currentValue)
+    * $min(1000, 2000) -- 1000
+
+> Syntax: `db.collection.update(query, {$min: {key: value}...})`
+
+```js
+db.employees.updateMany({}, {$min: {esal: 200}})
+```
+
+#### $max
+
+`$max` operator updates the value of the field to specified value if specified value is > current value. If field doesn't exist it will create new one and perform `$set` operation.
+
+* $max(providedValue, currentValue)
+    * $max(4000, 2000) -- 4000
+
+> Syntax: `db.collection.update(query, {$max: {key: value}...})`
+
+```js
+db.employees.updateMany({}, {$max: {esal: 200,000}})
+
+// but don't want to add field if its not exist, then check first its exist or not then perform operation
+db.employees.update({age: {$exists: true}}, {$set: {age: 45}}, {multi: true})
+```
+
+#### $mul
+
+mul means perform multiplication operation. If the specified field is not available then $mul creates that field and sets the value to 0.
+
+> Syntax: `db.collection.update(query, {$mul: {key: n}...})`
+
+```js
+// double all employees salary as covid bonus 
+db.employees.updateMany({}, {$mul: {esal: 2}})
+```
+
+### upsert property
+
+upsert means  = update + insert. If field is available then update else insert a new document with the values
+
+> Syntax: `db.collection.update(query, updateOperation, {upsert: true})`
+
+Whenever we are trying to perform update operation, the matched document may or many not be available. If it is available then it will be updated else won't update. If the document is not available then we can insert that document automatically by using set `{upsert: true}`. Default is `false`
+
+```js
+db.employees.updateOne({ename: "Mallika"}, {$set: {_id: 11, esal: 9999, eaddr: "Pandychari"}}, {upsert: false})
+// WriteResult({nMatched: 0, nUpserted: 0, nModified: 0})
+
+db.employees.updateOne({ename: "Mallika"}, {$set: {_id: 11, esal: 9999, eaddr: "Pandychari"}}, {upsert: true})
+// WriteResult({nMatched: 0, nUpserted: 1, nModified: 0})
+```
+
+### Array Update Operation
