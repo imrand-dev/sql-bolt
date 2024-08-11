@@ -1364,7 +1364,7 @@ db.books.find({no_of_reviews: {$gte: 3}}, {
 })
 ```
 
-### Array elements Project Operators
+### Array elements Project/featching Operators
 
 * $
 * $elemMatch
@@ -1752,4 +1752,172 @@ db.employees.updateOne({ename: "Mallika"}, {$set: {_id: 11, esal: 9999, eaddr: "
 // WriteResult({nMatched: 0, nUpserted: 1, nModified: 0})
 ```
 
-### Array Update Operation
+### Array Update Operators
+
+* $
+* $[]
+* $[identifier]
+
+```js
+let marks = [70, 90, 89, 56, 45, 38]
+
+// update first matched element which is < 60 --- $
+    // query condition should be specified in the "query"
+// increment all elements of array by 10 --- $[]
+// update only elements which are less than 60 as 999 --- $[identifier]
+    // query condition must be specified by using "options": arrayFilters
+
+db.dropDatabase()
+use abcDB
+db.students.drop()
+db.createCollection("students")
+
+db.students.insertOne({_id:1, marks: [70,87,90, 30, 40]})
+db.students.insertOne({_id:2, marks: [90,88,92,110,45]})
+db.students.insertOne({_id:3, marks: [85,100,90,76,58]})
+db.students.insertOne({_id:4, marks: [79,85,80,89,56]})
+db.students.insertOne({_id:5, marks: [88,88,92,45,23]})
+db.students.insertOne({_id:6, marks: [95,90,96,92,95]})
+```
+
+#### $
+
+`$` acts as a placeholder to update first matched element based on query condition.
+
+> Syntax: `db.collection.updateOne(query, {$set: {"array.$": value}})`
+
+The array field must appear as the part of query condition.
+
+```js
+// update the first matched element 90 in marks array to 999 where _id is 1
+db.students.updateOne({marks: 90, _id: 1}, {$set: {"marks.$": 999}})
+
+// update first matched element in marks array which is < 90 with 90 in every document
+db.students.updateMany({marks: {$lt: 90}}, {$set: {"marks.$": 999}})
+```
+
+#### $[]
+
+`$[]` acts as placeholder to update all elements in the array for the matched documents based on query condition.
+
+> Syntax: `db.collection.updateOne(query, {$set: {"array.$[]": value}})`
+
+```js
+// To increment all elements of marks array by 10
+db.students.updateMany({}, {$inc: {"marks.$[]": 10}})
+
+// update all elements of marks array as 1000 if array contains at least one element which >= 1000
+db.students.updateMany({marks: {$gte: 1000}}, {$set: {"marks.$[]": 10000}})
+```
+
+#### $[identifier]
+
+Instead of updating only first matched element or all elements of the array, we can update only required array elements. For this we've to use `$[identifier]`
+
+`$[identifier]` acts as placeholder to update all elements that match the `arrayFilters` condition for the documents that match the query condition.
+
+In this case updation is based on `arrayFilter` condition not based on query condition.
+
+> Syntax: `db.collection.updateMany(query, {$set: {"array.$[ele]": value}}, {arrayFilters: [{ele: {condition}}]})`
+
+```js
+// update all array elements which are less than 100 as 100
+db.students.updateMany({}, {$set: {"marks.$[ele]": 100}}, {arrayFilters: [{"ele": {$lt: 100}}]})
+
+// write query to perform following update
+// if the marks in the range 101 to 110 make as 110
+db.students.updateMany({}, {$set: {"marks.$[ele]": 110}}, {arrayFilters: [{$and: [{ele: {$gt: 100}}, {ele: {$lte: 110}}]}]})
+```
+
+* If we specify both query and arrayFilters in this case what is the order?
+    * query condition helpful to select documents. In those selected documents, based on arrayFilters condition array elements will be updated. Aka 1st select the documents based on condition then apply arrayFilters to those documents.
+
+```js
+// write the query to perform the following updates
+// if the marks in range(71, 80) then make them as 80
+// if the marks in range(81, 90) then make them as 90
+// if the marks in range(91, 100) then make them as 100
+db.students.updateMany(
+    {},
+    {
+        $set: {
+            "marks.$[e1]": 80,
+            "marks.$[e2]": 90,
+            "marks.$[e3]": 100
+        }
+    },
+    {
+        arrayFilters: [
+            {
+                $and: [
+                    {"e1": {$gt: 70}},
+                    {"e1": {$lte: 80}}
+                ]
+            },
+            {
+                $and: [
+                    {"e2": {$gt: 80}},
+                    {"e2": {$lte: 90}}
+                ]
+            },
+            {
+                $and: [
+                    {"e3": {$gt: 90}},
+                    {"e3": {$lte: 100}}
+                ]
+            }
+        ]
+    }
+)
+```
+
+#### $push
+
+We can use `$push` to append element to the array. We can customize this default behavior and add element in our required position.
+
+> Syntax: `db.collection.updateMany({}, {$push: {array: value,...}})`
+
+```js
+// add a single element
+db.students.updateOne({_id: 1}, {$push: {marks: 10}});
+
+// this won't add multiple elements, duplicate keys are not allowed
+db.students.updateOne({_id: 1}, {$push: {marks: 10, marks: 8}});
+
+// this will become a nested array, will be treated as a single element
+db.students.updateOne({_id: 1}, {$push: {marks: [10, 20]}});
+```
+
+##### $each modifier
+
+We can use `$each` modifier to add multiple values to the array
+
+> Syntax: `db.collection.find({}, {$push: {array: {$each: [N...]}}})`
+
+```js
+// add multiple elements
+db.students.updateMany({_id: 1}, {$push: {marks: {$each: [12, 14, 16]}}})
+```
+
+##### $position modifier
+
+By default element adds at the end of the array, but we can customize it by using `$position` modifier. To use `$position`, compulsory we should use `$each` modifier. `$position` without `$each` is always invalid.
+
+> Syntax: `db.collection.updateOne({}, {$push: {array: {$each: [], $position: value} }})`
+
+```js
+// add a element at first position
+db.students.updateOne(
+    {
+        _id: 1
+    },
+    {
+        $push: {
+            marks: {
+                $each: [-5],
+                $position: 0
+            }
+        }
+    }
+)
+```
