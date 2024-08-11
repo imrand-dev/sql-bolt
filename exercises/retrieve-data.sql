@@ -1,0 +1,2 @@
+-- https://www.w3resource.com/sql-exercises/
+-- https://www.sql-practice.com/
